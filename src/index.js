@@ -3,45 +3,86 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    let ishovering = false;
+
     function skillHover () {
 
         const ACTIVE_CLASS = 'is-active';
         const SELECTOR_ATTRIBUTE = 'data-skill-select';
         const TARGET_ATTRIBUTE = 'data-skill-type';
+        const PARENT_ID = "#skill-select-wrap"
+        const SCROLL_SPEED_MS = 2500
 
 
         const selectorItems = [...document.querySelectorAll(`[${SELECTOR_ATTRIBUTE}]`)];
         const targetItems = [...document.querySelectorAll(`[${TARGET_ATTRIBUTE}]`)];
-
-        if(selectorItems.length === 0 || targetItems.length === 0) return;
+        const parentDiv = document.querySelector("#skill-select-wrap")
         
-        function highlightSkill(skillSelector){
+        
+        if(selectorItems.length === 0 || targetItems.length === 0 || parentDiv === null) return;
+        
+        // util function to hightlight a skill
+        function highlightSkill(skillSelector, hideOthers = false){
+
+            skillSelector.classList.add(ACTIVE_CLASS);
+            selectorItems.forEach(otherSelector=>{
+                if(skillSelector !== otherSelector){
+                    otherSelector.classList.remove(ACTIVE_CLASS);
+                }
+            })
+            
             let skillType = skillSelector.getAttribute(SELECTOR_ATTRIBUTE);
             targetItems.forEach((target)=>{
                 let targetType = target.getAttribute(TARGET_ATTRIBUTE);
 
                 if(targetType.includes(skillType)){
                     target.classList.add(ACTIVE_CLASS);
+                    target.style.display = 'block';
+                    // gsap.to(target, {opacity: 1});
+                    target.hidden = false
                 }
                 else {
                     target.classList.remove(ACTIVE_CLASS);
+                    if (hideOthers && target.getAttribute(TARGET_ATTRIBUTE).length > 0) {
+                        target.style.display = 'none';
+                    }
                 }
             });
         }
 
-        // Add listeners
+        // set up a timer to iterate through and highlight
+        // gather all the skills to rotate through them
+        let i = 1;
+        function iterateSkill(){
+            if (i >= selectorItems.length) {
+                i = 0;
+            }
+            selectorItems[i].classList.add(ACTIVE_CLASS);
+            highlightSkill(selectorItems[i]);
+            i+=1;
+        }
+        
+        // Create a timer to iterate through skill selectors
+        let timer = setInterval(iterateSkill, SCROLL_SPEED_MS);
+
+        // Add listeners 
         selectorItems.forEach((selector)=>{
             selector.addEventListener('mouseenter', e => {
-                selector.classList.add(ACTIVE_CLASS);
-                selectorItems.forEach(otherSelector=>{
-                    if(selector !== otherSelector){
-                        otherSelector.classList.remove(ACTIVE_CLASS);
-                    }
-                })
-                highlightSkill(selector);
+                highlightSkill(selector, true);
+                clearInterval(timer);
             })
         });
+        
+        // Restart the timer if mouse leaves the parent div
+        parentDiv.addEventListener('mouseleave', e => {
+            timer = setInterval(iterateSkill, SCROLL_SPEED_MS);
+            targetItems.forEach((target)=>{
+                target.style.display = 'block';
+            })
 
+        })
+
+        // highlight the first selection
         highlightSkill(selectorItems[0]);
     }
 
