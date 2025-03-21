@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Add listeners 
         selectorItems.forEach((selector)=>{
             selector.addEventListener('mouseenter', e => {
-                highlightSkill(selector, true);
+                highlightSkill(selector, false);
                 clearInterval(timer);
             })
         });
